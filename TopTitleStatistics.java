@@ -223,7 +223,7 @@ public class TopTitleStatistics extends Configured implements Tool {
             mean = sum / N;
 
             for (Integer count : countList) {
-                var += Math.pow(count - mean, 2);
+                var += (count - mean) * (count - mean);
             }
             var /= N;
 
