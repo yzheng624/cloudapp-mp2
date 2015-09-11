@@ -28,7 +28,6 @@ public class OrphanPages extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
         Configuration conf = this.getConf();
-
         Job job = Job.getInstance(conf, "Orphan Pages");
 
         job.setOutputKeyClass(IntWritable.class);
@@ -44,21 +43,22 @@ public class OrphanPages extends Configured implements Tool {
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
         job.setJarByClass(OrphanPages.class);
-
         return job.waitForCompletion(true) ? 0 : 1;
     }
 
     public static class LinkCountMap extends Mapper<Object, Text, IntWritable, IntWritable> {
         @Override
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            String delimiters = " :";
             String line = value.toString();
-
-            Integer this_id = Integer.valueOf(line.split(": ")[0]);
-            String[] ids = line.split(": ")[1].split(" ");
-
-            for (String item : ids) {
-                Integer id = Integer.valueOf(item);
-                context.write(new IntWritable(id), new IntWritable(this_id));
+            StringTokenizer tokenizer = new StringTokenizer(line, delimiters);
+            if (tokenizer.hasMoreTokens()) {
+                Integer from = Integer.parseInt(tokenizer.nextToken().trim());
+                context.write(new IntWritable(from), new IntWritable(0));
+            }
+            while (tokenizer.hasMoreTokens()) {
+                Integer to = Integer.parseInt(tokenizer.nextToken().trim());
+                context.write(new IntWritable(to), new IntWritable(1));
             }
         }
     }
@@ -67,7 +67,7 @@ public class OrphanPages extends Configured implements Tool {
         @Override
         public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             if (!values.iterator().hasNext()) {
-                context.write(new IntWritable(key), NullWritable.get());
+                context.write(key, NullWritable.get());
             }
         }
     }
