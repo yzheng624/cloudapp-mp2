@@ -76,7 +76,7 @@ public class TopPopularLinks extends Configured implements Tool {
 
         Job jobB = Job.getInstance(conf, "Top Popular Links");
 
-        jobB.setOutputKeyClass(Text.class);
+        jobB.setOutputKeyClass(IntWritable.class);
         jobB.setOutputValueClass(IntWritable.class);
 
         jobB.setMapOutputKeyClass(NullWritable.class);
@@ -149,8 +149,8 @@ public class TopPopularLinks extends Configured implements Tool {
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
             for (Pair<Integer, Integer> item : countToWordMap) {
-                String[] strings = {item.second.toString(), item.first.toString()};
-                TextArrayWritable val = new TextArrayWritable(strings);
+                Integer[] integers = {item.second, item.first};
+                IntWritable val = new IntWritable(integers);
                 context.write(NullWritable.get(), val);
             }
         }
@@ -167,12 +167,12 @@ public class TopPopularLinks extends Configured implements Tool {
         }
 
         @Override
-        public void reduce(NullWritable key, Iterable<TextArrayWritable> values, Context context) throws IOException, InterruptedException {
-            for (TextArrayWritable val: values) {
-                Text[] pair = (Text[]) val.toArray();
+        public void reduce(NullWritable key, Iterable<IntArrayWritable> values, Context context) throws IOException, InterruptedException {
+            for (IntArrayWritable val: values) {
+                IntWritable[] pair = (IntWritable[]) val.toArray();
 
-                Integer id = Integer.parseInt(pair[0].toString());
-                Integer count = Integer.parseInt(pair[1].toString());
+                Integer id = pair[0];
+                Integer count = pair[1];
 
                 countToWordMap.add(new Pair<Integer, Integer>(count, id));
 
