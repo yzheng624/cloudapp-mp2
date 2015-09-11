@@ -72,7 +72,7 @@ public class TopPopularLinks extends Configured implements Tool {
         FileOutputFormat.setOutputPath(jobA, tmpPath);
 
         jobA.setJarByClass(TopPopularLinks.class);
-        jobA.waitForCompletion(true)
+        jobA.waitForCompletion(true);
 
         Job jobB = Job.getInstance(conf, "Top Popular Links");
 
@@ -150,7 +150,7 @@ public class TopPopularLinks extends Configured implements Tool {
         protected void cleanup(Context context) throws IOException, InterruptedException {
             for (Pair<Integer, Integer> item : countToWordMap) {
                 Integer[] integers = {item.second, item.first};
-                IntWritable val = new IntWritable(integers);
+                IntArrayWritable val = new IntArrayWritable(integers);
                 context.write(NullWritable.get(), val);
             }
         }
@@ -171,8 +171,8 @@ public class TopPopularLinks extends Configured implements Tool {
             for (IntArrayWritable val: values) {
                 IntWritable[] pair = (IntWritable[]) val.toArray();
 
-                Integer id = pair[0];
-                Integer count = pair[1];
+                Integer id = pair[0].get();
+                Integer count = pair[1].get();
 
                 countToWordMap.add(new Pair<Integer, Integer>(count, id));
 
