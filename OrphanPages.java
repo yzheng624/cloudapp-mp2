@@ -29,22 +29,23 @@ public class OrphanPages extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         Configuration conf = this.getConf();
 
-        FileSystem fs = FileSystem.get(conf);
+        Job job = Job.getInstance(conf, "Orphan Pages");
 
-        Job jobA = Job.getInstance(conf, "Orphan Pages");
+        job.setOutputKeyClass(IntWritable.class);
+        job.setOutputValueClass(NullWritable.class);
 
-        jobA.setOutputKeyClass(IntWritable.class);
-        jobA.setOutputValueClass(NullWritable.class);
+        job.setMapOutputKeyClass(IntWritable.class);
+        job.setMapOutputValueClass(IntWritable.class);
 
-        jobA.setMapperClass(LinkCountMap.class);
-        jobA.setReducerClass(OrphanPageReduce.class);
+        job.setMapperClass(LinkCountMap.class);
+        job.setReducerClass(OrphanPageReduce.class);
 
-        FileInputFormat.setInputPaths(jobA, new Path(args[0]));
-        FileOutputFormat.setOutputPath(jobA, new Path(args[1]));
+        FileInputFormat.setInputPaths(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-        jobA.setJarByClass(OrphanPages.class);
+        job.setJarByClass(OrphanPages.class);
 
-        return jobA.waitForCompletion(true) ? 0 : 1;
+        return job.waitForCompletion(true) ? 0 : 1;
     }
 
     public static class LinkCountMap extends Mapper<Object, Text, IntWritable, IntWritable> {
@@ -66,7 +67,7 @@ public class OrphanPages extends Configured implements Tool {
         @Override
         public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             if (!values.iterator().hasNext()) {
-                context.write(key, new NullWritable());
+                context.write(new IntWritable(key), NullWritable.get());
             }
         }
     }
