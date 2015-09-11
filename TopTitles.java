@@ -212,7 +212,6 @@ public class TopTitles extends Configured implements Tool {
                 IntWritable value = new IntWritable(item.first);
                 context.write(word, value);
             }
-
         }
     }
 
