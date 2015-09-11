@@ -66,7 +66,14 @@ public class OrphanPages extends Configured implements Tool {
     public static class OrphanPageReduce extends Reducer<IntWritable, IntWritable, IntWritable, NullWritable> {
         @Override
         public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            if (!values.iterator().hasNext()) {
+            boolean orphan = true;
+            for (IntWritable val: values) {
+                if (val.get() > 0) {
+                    orphan = false;
+                    break;
+                }
+            }
+            if (orphan) {
                 context.write(key, NullWritable.get());
             }
         }
